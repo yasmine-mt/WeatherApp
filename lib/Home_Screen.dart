@@ -170,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Navigate to weekly forecast screen
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => WeekScreen()),
+                        MaterialPageRoute(builder: (context) => const WeekScreen()),
                       );
                     },
                     child: Container(
@@ -212,13 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.white,
                       ),
                     ),
-                    TextSpan(
-                      text: 'Humidité : ${data!['current_weather']['humidity']}%\n',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
+
                     TextSpan(
                       text: '$formattedDate | $formattedTime',
                       style: const TextStyle(
