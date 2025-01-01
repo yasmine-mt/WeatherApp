@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'Week_Screen.dart';
 
+// Widget principal de l'application
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -13,42 +13,50 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+// État associé à HomeScreen
 class _HomeScreenState extends State<HomeScreen> {
+  // Variables pour stocker les données récupérées
   Map<String, dynamic>? data;
   List<dynamic>? hourlyTimes;
   List<dynamic>? hourlyTemperatures;
   List<dynamic>? hourlyHumidities;
   String? timezone;
-  String? greeting;
-  String? formattedDate;
-  String? formattedTime;
+  String? greeting; // Message de salutation dynamique
+  String? formattedDate; // Date formatée
+  String? formattedTime; // Heure formatée
 
+  // États pour gérer le chargement et les erreurs
   bool isLoading = true;
   bool hasError = false;
 
+  // Initialisation de l'état
   @override
   void initState() {
     super.initState();
-    fetchData();
+    fetchData(); // Appelle la fonction pour récupérer les données météo
   }
 
+  // Fonction pour récupérer les données météo depuis l'API
   Future<void> fetchData() async {
     try {
+      // URL de l'API avec les paramètres de latitude, longitude, etc.
       Uri url = Uri.parse(
           'https://api.open-meteo.com/v1/forecast?latitude=34.0531&longitude=-6.7985&timezone=auto&current_weather=true&hourly=temperature_2m,relative_humidity_2m');
+
+      // Effectue une requête HTTP GET
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
+        // Si la requête réussit, on met à jour l'état avec les données récupérées
         setState(() {
-          data = jsonDecode(response.body);
-          hourlyTimes = data!['hourly']['time'].sublist(0, 24);
-          hourlyTemperatures = data!['hourly']['temperature_2m'].sublist(0, 24);
-          hourlyHumidities = data!['hourly']['relative_humidity_2m'].sublist(0, 24);
-          timezone = data!['timezone'];
+          data = jsonDecode(response.body); // Décodage du JSON
+          hourlyTimes = data!['hourly']['time'].sublist(0, 24); // Heures des prévisions
+          hourlyTemperatures = data!['hourly']['temperature_2m'].sublist(0, 24); // Températures horaires
+          hourlyHumidities = data!['hourly']['relative_humidity_2m'].sublist(0, 24); // Humidité horaire
+          timezone = data!['timezone']; // Fuseau horaire
 
-          // Déterminer le message de salutation et formater la date/heure
-          DateTime currentTime = DateTime.parse(
-              data!['current_weather']['time']); // Attention au chemin exact
+          // Détermine le message de salutation selon l'heure actuelle
+          DateTime currentTime = DateTime.parse(data!['current_weather']['time']);
           int currentHour = currentTime.hour;
           if (currentHour < 12) {
             greeting = 'Bonjour';
@@ -58,14 +66,16 @@ class _HomeScreenState extends State<HomeScreen> {
             greeting = 'Bonsoir';
           }
 
+          // Formatte la date et l'heure
           formattedDate = DateFormat('EEEE d MMM').format(currentTime);
           formattedTime = DateFormat('h:mm a').format(currentTime);
-          isLoading = false;
+          isLoading = false; // Arrête l'état de chargement
         });
       } else {
-        throw Exception('Échec de la récupération des données');
+        throw Exception('Échec de la récupération des données'); // Gère les erreurs
       }
     } catch (e) {
+      // Si une erreur survient, on met à jour l'état pour afficher un message d'erreur
       setState(() {
         hasError = true;
         isLoading = false;
@@ -73,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Widget pour un texte avec effet de dégradé
   Widget gradientText(String text, double fontSize, FontWeight fontWeight) {
     return ShaderMask(
       blendMode: BlendMode.srcIn,
@@ -93,15 +104,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Construction de l'interface utilisateur
     return Scaffold(
       body: isLoading
           ? Center(
+        // Affiche un indicateur de chargement pendant la récupération des données
         child: CircularProgressIndicator(
           color: Colors.blueAccent,
         ),
       )
           : hasError
           ? Center(
+        // Affiche un message d'erreur en cas de problème
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -117,13 +131,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: fetchData,
+              onPressed: fetchData, // Bouton pour réessayer
               child: const Text('Réessayer'),
             )
           ],
         ),
       )
           : Container(
+        // Interface principale avec un dégradé en arrière-plan
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -140,6 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Affiche le fuseau horaire et le message de salutation
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -167,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      // Navigate to weekly forecast screen
+                      // Navigue vers l'écran des prévisions hebdomadaires
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const WeekScreen()),
@@ -188,31 +204,30 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-
                 ],
               ),
               const SizedBox(height: 16),
+              // Image représentant la météo actuelle
               Image.asset(
-                'assets/images/clear.png', // Change dynamically if needed
+                'assets/images/clear.png', // Image dynamique selon les données météo
                 height: 200,
                 fit: BoxFit.contain,
               ),
               const SizedBox(height: 16),
+              // Affiche la température actuelle, la date et l'heure
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   style: GoogleFonts.openSans(),
                   children: [
                     TextSpan(
-                      text:
-                      '${data!['current_weather']['temperature'].toString()}°C\n',
+                      text: '${data!['current_weather']['temperature'].toString()}°C\n',
                       style: const TextStyle(
                         fontSize: 72,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-
                     TextSpan(
                       text: '$formattedDate | $formattedTime',
                       style: const TextStyle(
@@ -226,6 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 16),
               gradientText('Prévisions horaires', 22, FontWeight.bold),
               const SizedBox(height: 16),
+              // Liste des prévisions horaires
               Expanded(
                 child: ListView.builder(
                   itemCount: hourlyTimes?.length ?? 0,
@@ -236,8 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            DateFormat('h a').format(
-                                DateTime.parse(hourlyTimes![index])),
+                            DateFormat('h a').format(DateTime.parse(hourlyTimes![index])),
                             style: const TextStyle(
                               fontSize: 16,
                               color: Colors.white,

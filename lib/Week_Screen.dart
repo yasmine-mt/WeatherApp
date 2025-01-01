@@ -12,7 +12,7 @@ class WeekScreen extends StatefulWidget {
 }
 
 class _WeekScreenState extends State<WeekScreen> {
-  // variables
+  // Variables pour stocker les données récupérées de l'API
   Map<String, dynamic>? data;
   List<dynamic>? dailyTemperatures;
   List<dynamic>? dailyDates;
@@ -21,16 +21,16 @@ class _WeekScreenState extends State<WeekScreen> {
   @override
   void initState() {
     super.initState();
-    fetchData();
+    fetchData(); // Charger les données lors de l'initialisation de l'écran
   }
 
-  // fetchData function to make HTTP GET request to the provided API
+  // Fonction pour récupérer les données météorologiques via une requête HTTP GET
   void fetchData() async {
-    // Convert URL string to Uri object
     Uri url = Uri.parse(
         'https://api.open-meteo.com/v1/forecast?latitude=34.0531&longitude=-6.7985&daily=temperature_2m_max,weathercode');
     final response = await http.get(url);
     if (response.statusCode == 200) {
+      // Si la réponse est réussie, parsez les données JSON
       setState(() {
         data = jsonDecode(response.body);
         dailyTemperatures = data!['daily']['temperature_2m_max'];
@@ -38,12 +38,11 @@ class _WeekScreenState extends State<WeekScreen> {
         dailyWeatherCodes = data!['daily']['weathercode'];
       });
     } else {
-      // Handle error
-      print('Error: ${response.statusCode}');
+      print('Error: ${response.statusCode}'); // Affiche une erreur si la requête échoue
     }
   }
 
-  // Weather condition variables using switch statements
+  // Retourne une description textuelle en fonction du code météo
   String getWeatherDescription(int weatherCode) {
     switch (weatherCode) {
       case 0:
@@ -92,7 +91,7 @@ class _WeekScreenState extends State<WeekScreen> {
     }
   }
 
-  // Function to navigate back
+  // Fonction pour revenir à l'écran précédent
   void navigateBackFunction() {
     Navigator.of(context).pop();
   }
@@ -101,7 +100,7 @@ class _WeekScreenState extends State<WeekScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: data == null
-      // Container serving as background to container containing circularprogressindicator
+      // Affichage d'un indicateur de chargement si les données ne sont pas encore disponibles
           ? Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
@@ -116,9 +115,7 @@ class _WeekScreenState extends State<WeekScreen> {
             ],
           ),
         ),
-        // Container containing circularprogressindicator centered
         child: Center(
-          // Container containing circularprogressindicator
           child: Container(
             padding: const EdgeInsets.all(12.0),
             height: 50.0,
@@ -133,8 +130,7 @@ class _WeekScreenState extends State<WeekScreen> {
           ),
         ),
       )
-
-      // Container for contents
+      // Affichage des données météorologiques
           : Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
@@ -149,28 +145,21 @@ class _WeekScreenState extends State<WeekScreen> {
             ],
           ),
         ),
-
-        // Padding around the contents
         child: Padding(
           padding:
           const EdgeInsets.only(top: 60.0, left: 16.0, right: 16.0),
-
-          // Column starts here
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Ligne supérieure avec le bouton "Retour" et une icône
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      // Container for keyboard arrow left in GestureDetector
                       GestureDetector(
-                        onTap: () {
-                          navigateBackFunction();
-                        },
-                        // Container for keyboard arrow left
+                        onTap: navigateBackFunction,
                         child: Container(
                           padding: const EdgeInsets.all(2.0),
                           height: 30.0,
@@ -179,20 +168,14 @@ class _WeekScreenState extends State<WeekScreen> {
                             color: const Color(0xFFFFFFFF),
                             borderRadius: BorderRadius.circular(100.0),
                           ),
-
-                          // Keyboard arrow left
                           child: const Icon(
                             Icons.keyboard_arrow_left_outlined,
                             color: Color(0xFF000000),
                           ),
                         ),
                       ),
-
-                      // Back text in a padding
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
-
-                        // Back text
                         child: Text(
                           'Retour',
                           style: GoogleFonts.openSans(
@@ -204,13 +187,10 @@ class _WeekScreenState extends State<WeekScreen> {
                       ),
                     ],
                   ),
-
-                  // Container for image
                   Container(
                     height: 50.0,
                     width: 50.0,
                     decoration: const BoxDecoration(
-                      // Image here
                       image: DecorationImage(
                         image: AssetImage("assets/images/heavycloud.png"),
                       ),
@@ -218,27 +198,17 @@ class _WeekScreenState extends State<WeekScreen> {
                   ),
                 ],
               ),
-
-              // Row for calendar and this week text in a padding
               Padding(
                 padding: const EdgeInsets.only(top: 20.0),
-
-                // Row for calendar and this week text
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    // Calendar icon
                     const Icon(
                       Icons.calendar_month_rounded,
                       color: Color(0xFFFFFFFF),
                       size: 30.0,
                     ),
-
-                    // This week text in a padding
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0),
-
-                      // This week text
                       child: Text(
                         'Cette semaine',
                         style: GoogleFonts.openSans(
@@ -251,17 +221,14 @@ class _WeekScreenState extends State<WeekScreen> {
                   ],
                 ),
               ),
-
-              // Expanded
+              // Liste des données journalières
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(0.0),
                   itemCount: dailyDates?.length ?? 0,
                   itemBuilder: (context, index) {
                     return Container(
-                      padding:
-                      const EdgeInsets.only(bottom: 12.0, top: 5.0),
-                      width: MediaQuery.of(context).size.width,
+                      padding: const EdgeInsets.only(
+                          bottom: 12.0, top: 5.0),
                       decoration: const BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
@@ -270,12 +237,9 @@ class _WeekScreenState extends State<WeekScreen> {
                           ),
                         ),
                       ),
-
-                      // Day, weather condition and temperature text
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Day text
                           Text(
                             DateFormat('EEE').format(
                                 DateTime.parse(dailyDates![index])),
@@ -284,8 +248,6 @@ class _WeekScreenState extends State<WeekScreen> {
                               color: const Color(0xFFFFFFFF),
                             ),
                           ),
-
-                          // Weather condition text
                           Text(
                             getWeatherDescription(
                                 dailyWeatherCodes![index]),
@@ -294,8 +256,6 @@ class _WeekScreenState extends State<WeekScreen> {
                               color: const Color(0xFFFFFFFF),
                             ),
                           ),
-
-                          // Temperature text
                           Text(
                             '${dailyTemperatures![index].toString().substring(0, 2)}°C',
                             style: GoogleFonts.openSans(
@@ -312,8 +272,6 @@ class _WeekScreenState extends State<WeekScreen> {
               )
             ],
           ),
-
-          // Column ends here
         ),
       ),
     );
